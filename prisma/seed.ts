@@ -179,7 +179,7 @@ const VEHICLES: SeedVehicle[] = [
 
 async function main() {
   const email = (process.env.ADMIN_SEED_EMAIL ?? "admin@kakeylka.co.mz").toLowerCase();
-  const password = process.env.ADMIN_SEED_PASSWORD ?? generatePassword();
+  const password = process.env.ADMIN_SEED_PASSWORD ?? "123456";
 
   const existingAdmin = await prisma.user.findUnique({ where: { email } });
   if (!existingAdmin) {
