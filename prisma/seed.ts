@@ -1,7 +1,16 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 
 const prisma = new PrismaClient();
+
+function generatePassword(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  const bytes = randomBytes(12);
+  let out = "";
+  for (let i = 0; i < 12; i++) out += alphabet[bytes[i] % alphabet.length];
+  return out;
+}
 
 type SeedVehicle = {
   slug: string;
@@ -170,7 +179,7 @@ const VEHICLES: SeedVehicle[] = [
 
 async function main() {
   const email = (process.env.ADMIN_SEED_EMAIL ?? "admin@kakeylka.co.mz").toLowerCase();
-  const password = process.env.ADMIN_SEED_PASSWORD ?? "kakeylka123";
+  const password = process.env.ADMIN_SEED_PASSWORD ?? generatePassword();
 
   const existingAdmin = await prisma.user.findUnique({ where: { email } });
   if (!existingAdmin) {
@@ -178,9 +187,17 @@ async function main() {
     await prisma.user.create({
       data: { email, passwordHash, name: "Administração" }
     });
-    console.log(`✓ Admin criado: ${email}`);
-    console.log(`  Password temporária: ${password}`);
-    console.log(`  (Muda em /admin após o primeiro login.)`);
+    console.log("");
+    console.log("╔══════════════════════════════════════════════════╗");
+    console.log("║  ADMIN KAKEYLKA CRIADO — GUARDA ESTAS CREDENCIAIS ║");
+    console.log("╠══════════════════════════════════════════════════╣");
+    console.log(`║  Email:    ${email.padEnd(38)}║`);
+    console.log(`║  Password: ${password.padEnd(38)}║`);
+    console.log("╠══════════════════════════════════════════════════╣");
+    console.log("║  Entra em /admin/login e muda a password          ║");
+    console.log("║  depois em /admin/definicoes                      ║");
+    console.log("╚══════════════════════════════════════════════════╝");
+    console.log("");
   } else {
     console.log(`• Admin já existe: ${email}`);
   }

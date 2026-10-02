@@ -1,7 +1,18 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { createHash } from "crypto";
 import { prisma } from "./db";
+
+function resolveSecret(): string {
+  if (process.env.NEXTAUTH_SECRET) return process.env.NEXTAUTH_SECRET;
+  const base =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ??
+    process.env.VERCEL_URL ??
+    process.env.DATABASE_URL ??
+    "kakeylka-local-dev";
+  return createHash("sha256").update(`${base}:kakeylka-fallback-salt`).digest("hex");
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -39,5 +50,5 @@ export const authOptions: NextAuthOptions = {
       return session;
     }
   },
-  secret: process.env.NEXTAUTH_SECRET
+  secret: resolveSecret()
 };
